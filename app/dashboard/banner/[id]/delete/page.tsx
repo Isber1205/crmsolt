@@ -27,7 +27,7 @@ export default function DeleteBannerRoute({ params }: { params: { id: string }})
                     </Button>
                     <form action={deleteBanner}>
                         <input type="hidden" name="bannerId" value={params.id} />
-                        <SubmitButton variant="destructive" text="Delete Product"/>
+                        <SubmitButton variant="destructive" text="Delete Banner"/>
                     </form>
                 </CardFooter>
             </Card>

@@ -20,7 +20,8 @@ import { parseWithZod } from "@conform-to/zod";
 import { ChevronLeft, XIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
+import { toast } from 'react-toastify';
 
 export default function BannerRoute() {
     const [image, setImages] = useState<string[]>([]);
