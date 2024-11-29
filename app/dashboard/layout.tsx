@@ -3,31 +3,46 @@ import { DashboardNavigation } from "../components/dashboard/DashboardNavigation
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { CircleUser, MenuIcon } from "lucide-react";
-import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuItem, 
-    DropdownMenuLabel, 
-    DropdownMenuSeparator, 
-    DropdownMenuTrigger 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import {
     LogoutLink,
-  } from "@kinde-oss/kinde-auth-nextjs/components";
+} from "@kinde-oss/kinde-auth-nextjs/components";
+import prisma from "../lib/db";
 
-export default async function DashboardLayout({ 
-    children,
- }: { 
-    children: ReactNode;
- }) {
-    const {getUser} = getKindeServerSession();
+async function validateUser() {
+    const { getUser } = getKindeServerSession();
     const user = await getUser();
 
-    if (!user || user.email === "jan@alenix.de") {
-        return redirect("/");
-    }
+    if (!user) return null;
+
+    const registeredUser = await prisma.user.findUnique({
+        where: {
+            id: user.id,
+            email: user.email ?? "",
+        },
+    });
+
+    return registeredUser;
+}
+
+export default async function DashboardLayout({
+    children,
+}: {
+    children: ReactNode;
+}) {
+    const user = await validateUser();
+
+    if (!user) return redirect("/");
+
     return (
         <div className="flex w-full flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <header className="sticky top-0 flex h-16 items-center justify-between gap-4 border-b bg-white">
@@ -37,11 +52,11 @@ export default async function DashboardLayout({
 
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button 
-                          className="shrink-0 md:hidden" 
-                          variant="outline"
-                          size="icon">
-                            <MenuIcon className="h-5 w-5"/>                    
+                        <Button
+                            className="shrink-0 md:hidden"
+                            variant="outline"
+                            size="icon">
+                            <MenuIcon className="h-5 w-5" />
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left">

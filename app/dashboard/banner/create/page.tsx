@@ -20,8 +20,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { ChevronLeft, XIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useActionState, useState, useEffect } from "react";
-import { toast } from 'react-toastify';
+import { useActionState, useState } from "react";
 
 export default function BannerRoute() {
     const [image, setImages] = useState<string[]>([]);
@@ -79,7 +78,7 @@ export default function BannerRoute() {
                                 value={image}
                                 key={fields.imageString.key}
                                 name={fields.imageString.name}
-                                defaultValue={fields.imageString.initialValue as any}
+                                defaultValue={fields.imageString.initialValue}
                             />
                             {image.length > 0 ? (
                                 <div className="flex gap-6">

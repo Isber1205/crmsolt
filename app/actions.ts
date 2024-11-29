@@ -11,13 +11,26 @@ import { revalidatePath } from "next/cache";
 import { stripe } from "./lib/stripe";
 import Stripe from "stripe";
 
-export async function createProduct(prevState: unknown, formData: FormData) {
+async function validateUser() {
     const { getUser } = getKindeServerSession();
     const user = await getUser();
 
-    if (!user || user.email === "jan@alenix.de") {
-        return redirect("/");
-    }
+    if (!user) return null;
+
+    const registeredUser = await prisma.user.findUnique({
+        where: {
+            id: user.id,
+            email: user.email ?? "",
+        },
+    });
+
+    return registeredUser;
+}
+
+export async function createProduct(prevState: unknown, formData: FormData) {
+    const user = await validateUser();
+
+    if (!user) return redirect("/");
 
     const submission = parseWithZod(formData, {
         schema: productSchema,
@@ -29,7 +42,7 @@ export async function createProduct(prevState: unknown, formData: FormData) {
 
     const flattenUrls = submission.value.images.flatMap((urlString) =>
         urlString.split(",").map((url) => url.trim())
-    )
+    );
 
     await prisma.product.create({
         data: {
@@ -46,13 +59,10 @@ export async function createProduct(prevState: unknown, formData: FormData) {
     redirect("/dashboard/products");
 }
 
-export async function editProduct(prevState: any, formData: FormData) {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+export async function editProduct(prevState: unknown, formData: FormData) {
+    const user = await validateUser();
 
-    if (!user || user.email === "jan@alenix.de") {
-        return redirect("/");
-    }
+    if (!user) return redirect("/");
 
     const submission = parseWithZod(formData, {
         schema: productSchema,
@@ -64,34 +74,32 @@ export async function editProduct(prevState: any, formData: FormData) {
 
     const flattenUrls = submission.value.images.flatMap((urlString) =>
         urlString.split(",").map((url) => url.trim())
-    )
+    );
 
-    const productId = formData.get('productId') as string
+    const productId = formData.get("productId") as string;
     await prisma.product.update({
         where: {
-            id: productId
+            id: productId,
         },
         data: {
             name: submission.value.name,
             description: submission.value.description,
             category: submission.value.category,
             price: submission.value.price,
-            isFeatured: submission.value.isFeatured === true ? true : false,
+            isFeatured: submission.value.isFeatured,
             status: submission.value.status,
             images: flattenUrls,
-        }
+        },
     });
 
     redirect("/dashboard/products");
 }
 
-export async function deleteProduct(formData: FormData) {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
 
-    if (!user || user.email === "jan@alenix.de") {
-        return redirect("/");
-    }
+export async function deleteProduct(formData: FormData) {
+    const user = await validateUser();
+
+    if (!user) return redirect("/");
 
     await prisma.product.delete({
         where: {
@@ -102,13 +110,11 @@ export async function deleteProduct(formData: FormData) {
     redirect("/dashboard/products");
 }
 
-export async function CreateBanner(prevState: any, formData: FormData) {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
 
-    if (!user || user.email === "jan@alenix.de") {
-        return redirect("/");
-    }
+export async function CreateBanner(prevState: unknown, formData: FormData) {
+    const user = await validateUser();
+
+    if (!user) return redirect("/");
 
     const submission = parseWithZod(formData, {
         schema: bannerSchema,
@@ -129,12 +135,9 @@ export async function CreateBanner(prevState: any, formData: FormData) {
 }
 
 export async function deleteBanner(formData: FormData) {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    const user = await validateUser();
 
-    if (!user || user.email === "jan@alenix.de") {
-        return redirect("/");
-    }
+    if (!user) return redirect("/");
 
     await prisma.banner.delete({
         where: {
@@ -153,7 +156,7 @@ export async function addItem(productId: string) {
         return redirect("/");
     }
 
-    let cart: Cart | null = await redis.get(`cart-${user.id}`);
+    const cart: Cart | null = await redis.get(`cart-${user.id}`);
 
     const selectedProduct = await prisma.product.findUnique({
         select: {
@@ -224,7 +227,7 @@ export async function delItem(formData: FormData) {
 
     const productId = formData.get("productId")
 
-    let cart: Cart | null = await redis.get(`cart-${user.id}`);
+    const cart: Cart | null = await redis.get(`cart-${user.id}`);
 
     if (cart && cart.items) {
         const updateCart: Cart = {
@@ -247,7 +250,7 @@ export async function checkOut() {
         return redirect ("/")
     }
 
-    let cart: Cart | null = await redis.get(`cart-${user.id}`);
+    const cart: Cart | null = await redis.get(`cart-${user.id}`);
 
 
     if(cart && cart.items) {

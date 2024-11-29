@@ -33,7 +33,7 @@ export default async function BagRoute() {
                         <ShoppingBag className="w-10 h-10 text-primary" />
                     </div>
 
-                    <h2 className="mt-6 text-xl font-semibold">You don't have any products in your Bag</h2>
+                    <h2 className="mt-6 text-xl font-semibold">You dont have any products in your Bag</h2>
 
                     <p className="mb-8 mt-2 text-center text-sm leading-6 text-muted-foreground max-w-sm mx-auto">You currently dont have any products in your shopping bag. Please add some so that you can see them right here.</p>
 
