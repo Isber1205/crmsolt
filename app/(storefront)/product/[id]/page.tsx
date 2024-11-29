@@ -27,8 +27,9 @@ async function getData(productId: string) {
     return data;
 }
 
-export default async function ProductIdRoute({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default async function ProductIdRoute(context: { params: { id: string } }) {
+    const { id } = context.params;
+
     const data = await getData(id);
     const addProducttoShoppingCart = addItem.bind(null, data.id);
 
@@ -51,7 +52,6 @@ export default async function ProductIdRoute({ params }: { params: { id: string 
                     <form action={addProducttoShoppingCart}>
                         <ShoppingBagButton />
                     </form>
-
                 </div>
             </div>
 
