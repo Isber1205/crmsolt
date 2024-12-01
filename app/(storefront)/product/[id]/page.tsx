@@ -1,3 +1,6 @@
+"use server";
+
+import { Metadata } from 'next';
 import { addItem } from "@/app/actions";
 import { FeaturedProducts } from "@/app/components/storefront/FeaturedProducts";
 import ImageSlider from "@/app/components/storefront/ImageSlider";
@@ -5,6 +8,28 @@ import { ShoppingBagButton } from "@/app/components/SubmitButtons";
 import prisma from "@/app/lib/db";
 import { StarIcon } from "lucide-react";
 import { notFound } from "next/navigation";
+
+// Define los parámetros según la convención de Next.js
+export interface Params {
+    params: {
+        id: string;
+    };
+    searchParams: { [key: string]: string | string[] | undefined };
+}
+
+// Función para generar metadatos
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+    const { id } = params;
+    const data = await prisma.product.findUnique({
+        where: { id },
+        select: { name: true, description: true }
+    });
+
+    return {
+        title: data?.name || 'Product Details',
+        description: data?.description || 'Product details page'
+    };
+}
 
 async function getData(productId: string) {
     const data = await prisma.product.findUnique({
@@ -27,8 +52,8 @@ async function getData(productId: string) {
     return data;
 }
 
-export default async function ProductIdRoute(context: { params: { id: string } }) {
-    const { id } = context.params;
+export default async function ProductIdRoute({ params }: Params) {
+    const { id } = params;
 
     const data = await getData(id);
     const addProducttoShoppingCart = addItem.bind(null, data.id);
