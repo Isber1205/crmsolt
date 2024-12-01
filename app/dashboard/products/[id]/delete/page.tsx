@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 
-export default function DeleteRoute({ params }: { params: { id: string }}) {
+export default async function DeleteRoute(props: { params: Promise<{ id: string }>}) {
+    const params = await props.params;
     return (
         <div className="h-[80vh] w-full flex items-center justify-center">
             <Card className="max-w-xl">

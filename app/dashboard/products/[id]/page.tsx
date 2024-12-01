@@ -16,11 +16,12 @@ async function getData(productId: string) {
     return data;
 }
 
-export default async function EditRoute({
-    params,
-}: {
-    params: { id: string };
-}) {
+export default async function EditRoute(
+    props: {
+        params: Promise<{ id: string }>;
+    }
+) {
+    const params = await props.params;
     const data = await getData(params.id);
     return <EditForm data={data} />;
 }  
